@@ -9,15 +9,10 @@ from .errors.entity_errors import ParamNotValidated, EntityValidationError
 from .enums.item_type_enum import ItemTypeEnum
 from .entities.item import Item
 
-# === INJEÇÃO DE IMPORTS DO DEVBANK ===
-from .repo.user_repository_mock import UserRepositoryMock
-
 app = FastAPI()
 
+# Este objeto agora faz a ponte tanto para os Itens quanto para o Usuário (DevBank)
 repo = Environments.get_item_repo()()
-
-# === INICIALIZAÇÃO DO REPOSITÓRIO DE USUÁRIO ===
-user_repo = UserRepositoryMock()
 
 # ==========================================================
 # ROTAS DO DEVBANK (BACKEND SOLO FELIPE)
@@ -30,8 +25,10 @@ def get_user_data():
     iniciais do usuario do DevBank integrado com o Playground.
     """
     try:
-        user = user_repo.get_user()
-        # .model_dump() converte o objeto Pydantic em dicionario Python nativo
+        user = repo.get_user()
+        # Como a nossa entidade User herda de BaseModel, usamos o to_dict ou o dump se estruturado
+        if hasattr(user, 'to_dict'):
+            return user.to_dict()
         return user.model_dump()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -47,7 +44,9 @@ def deposit(request: dict):
         raise HTTPException(status_code=400, detail="O parametro amount eh obrigatorio")
     
     try:
-        user_updated = user_repo.deposit(float(amount))
+        user_updated = repo.deposit(float(amount))
+        if hasattr(user_updated, 'to_dict'):
+            return user_updated.to_dict()
         return user_updated.model_dump()
     except EntityValidationError as err:
         raise HTTPException(status_code=400, detail=err.message)
@@ -65,7 +64,9 @@ def withdraw(request: dict):
         raise HTTPException(status_code=400, detail="O parametro amount eh obrigatorio")
     
     try:
-        user_updated = user_repo.withdraw(float(amount))
+        user_updated = repo.withdraw(float(amount))
+        if hasattr(user_updated, 'to_dict'):
+            return user_updated.to_dict()
         return user_updated.model_dump()
     except EntityValidationError as err:
         raise HTTPException(status_code=400, detail=err.message)
@@ -119,7 +120,7 @@ def create_item(request: dict):
     if type(item_type) != str:
         raise HTTPException(status_code=400, detail="Item type must be a string")
     if item_type not in [possible_type.value for possible_type in ItemTypeEnum]:
-        raise HTTPException(status_code=400, detail=item_type + " is not a valid one")
+        raise HTTPException(status_code=400, detail="Item type is not a valid one")
     
     admin_permission = request.get("admin_permission")
     
