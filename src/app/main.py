@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from mangum import Mangum
 
 from .environments import Environments
-from .errors.entity_errors import ParamNotValidated
+from .errors.entity_errors import ParamNotValidated, EntityValidationError
 from .enums.item_type_enum import ItemTypeEnum
 from .entities.item import Item
 
@@ -33,6 +33,42 @@ def get_user_data():
         user = user_repo.get_user()
         # .model_dump() converte o objeto Pydantic em dicionario Python nativo
         return user.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/deposit")
+def deposit(request: dict):
+    """
+    Rota de Deposito: Recebe {"amount": valor} e soma ao saldo.
+    """
+    amount = request.get("amount")
+    if amount is None:
+        raise HTTPException(status_code=400, detail="O parametro amount eh obrigatorio")
+    
+    try:
+        user_updated = user_repo.deposit(float(amount))
+        return user_updated.model_dump()
+    except EntityValidationError as err:
+        raise HTTPException(status_code=400, detail=err.message)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/withdraw")
+def withdraw(request: dict):
+    """
+    Rota de Saque: Recebe {"amount": valor} e subtrai do saldo.
+    """
+    amount = request.get("amount")
+    if amount is None:
+        raise HTTPException(status_code=400, detail="O parametro amount eh obrigatorio")
+    
+    try:
+        user_updated = user_repo.withdraw(float(amount))
+        return user_updated.model_dump()
+    except EntityValidationError as err:
+        raise HTTPException(status_code=400, detail=err.message)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -83,7 +119,7 @@ def create_item(request: dict):
     if type(item_type) != str:
         raise HTTPException(status_code=400, detail="Item type must be a string")
     if item_type not in [possible_type.value for possible_type in ItemTypeEnum]:
-        raise HTTPException(status_code=400, detail="Item type is not a valid one")
+        raise HTTPException(status_code=400, detail=item_type + " is not a valid one")
     
     admin_permission = request.get("admin_permission")
     
