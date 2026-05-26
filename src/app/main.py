@@ -1,22 +1,44 @@
+# type: ignore
+
 from fastapi import FastAPI, HTTPException
+from pydantic import ValidationError
 from mangum import Mangum
 
 from .environments import Environments
-
 from .errors.entity_errors import ParamNotValidated
-
 from .enums.item_type_enum import ItemTypeEnum
-
 from .entities.item import Item
 
+# === INJEÇÃO DE IMPORTS DO DEVBANK ===
+from .repo.user_repository_mock import UserRepositoryMock
 
 app = FastAPI()
 
 repo = Environments.get_item_repo()()
 
-# a baixo estão as rotas da api
-# elas interagem com os métodos de repositório. por exemplo a rota create item chama, não exclusivamente,
-# o método repo.create_item() para criar o item no nosso repositório
+# === INICIALIZAÇÃO DO REPOSITÓRIO DE USUÁRIO ===
+user_repo = UserRepositoryMock()
+
+# ==========================================================
+# ROTAS DO DEVBANK (BACKEND SOLO FELIPE)
+# ==========================================================
+
+@app.get("/")
+def get_user_data():
+    """
+    Rota raiz exigida pela Dev Maua para trazer as informacoes 
+    iniciais do usuario do DevBank integrado com o Playground.
+    """
+    try:
+        user = user_repo.get_user()
+        # .model_dump() converte o objeto Pydantic em dicionario Python nativo
+        return user.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==========================================================
+# ROTAS PADRÃO DO TEMPLATE (MANTIDAS INTACTAS)
+# ==========================================================
 
 @app.get("/items/get_all_items")
 def get_all_items():
@@ -49,9 +71,6 @@ def create_item(request: dict):
     if not validation_item_id[0]:
         raise HTTPException(status_code=400, detail=validation_item_id[1])
     
-    # por exemplo, dentro da rota create item, chamamos um get_item para checar se o item ja existe
-    # em nosso repositorio
-    
     item = repo.get_item(item_id)
     if item is not None:
         raise HTTPException(status_code=409, detail="Item already exists")
@@ -74,8 +93,6 @@ def create_item(request: dict):
             name=name,
             price=price,
             item_type=ItemTypeEnum[item_type], 
-            # bate a string que veio na request com todos os .values dentro do enum ItemTypeEnum.
-            # ou seja, se vier uma string TOY ele vai converter para ItemTypeEnum.TOY
             admin_permission=admin_permission,
         )
     except ParamNotValidated as err:
@@ -140,7 +157,5 @@ def update_item(request: dict):
         "item_id": item_id,
         "item": item_updated.to_dict()    
     }
-    
-
 
 handler = Mangum(app, lifespan="off")
