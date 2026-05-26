@@ -33,3 +33,18 @@ class User(BaseModel):
         if not re.match(r'^\d{5}-\d{1}$', v):
             raise ValueError("A conta deve seguir rigorosamente o padrao XXXXX-X")
         return v
+
+    def to_dict(self):
+        """
+        Método mapeando os atributos tanto em snake_case quanto em CamelCase
+        para garantir compatibilidade exata com o Front-end do Playground.
+        """
+        return {
+            "name": self.name,
+            "agency": self.agency,
+            "account": self.account,
+            "current_balance": self.current_balance,
+            # Variações para o Front-end conseguir ler com sucesso:
+            "currentBalance": self.current_balance,
+            "saldo": self.current_balance
+        }
