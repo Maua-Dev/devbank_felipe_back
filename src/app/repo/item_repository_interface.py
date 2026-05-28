@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, Any
-from src.app.entities.item import Item
-from src.app.entities.user import User
+
+# CORREÇÃO: Usando imports relativos (..) em vez de src.app
+from ..entities.item import Item
+from ..entities.user import User
 
 class IItemRepository(ABC):
 

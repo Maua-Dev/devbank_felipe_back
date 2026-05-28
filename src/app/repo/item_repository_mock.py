@@ -1,8 +1,10 @@
 from typing import List, Optional, Any
-from src.app.entities.item import Item
-from src.app.enums.item_type_enum import ItemTypeEnum
-from src.app.entities.user import User
-from src.app.errors.entity_errors import EntityValidationError
+
+# CORREÇÃO: Usando imports relativos (..) em vez de src.app
+from ..entities.item import Item
+from ..enums.item_type_enum import ItemTypeEnum
+from ..entities.user import User
+from ..errors.entity_errors import EntityValidationError
 from .item_repository_interface import IItemRepository
 
 class ItemRepositoryMock(IItemRepository):
@@ -10,7 +12,7 @@ class ItemRepositoryMock(IItemRepository):
     user: User
 
     def __init__(self):
-        # IDs e Nomes exatos exigidos pelos testes automatizados do template
+        # IDs e Nomes intocáveis exigidos pela pipeline da DevMauá
         self.items = [
             Item(item_id="b11af449-22c7-43db-b0e4-dbfbbe7fdbd7", name="Barbie", price=2.5, item_type=ItemTypeEnum.TOY, admin_permission=False),
             Item(item_id="b21af449-22c7-43db-b0e4-dbfbbe7fdbd7", name="caneta", price=1.0, item_type=ItemTypeEnum.TOY, admin_permission=False),
