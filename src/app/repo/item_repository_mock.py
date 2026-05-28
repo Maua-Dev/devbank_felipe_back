@@ -10,10 +10,11 @@ class ItemRepositoryMock(IItemRepository):
     user: User
 
     def __init__(self):
+        # IDs atualizados para formato UUID válido exigido pela entidade Item da Mauá
         self.items = [
-            Item(item_id="1", name="maça", price=2.5, item_type=ItemTypeEnum.FOOD, admin_permission=False),
-            Item(item_id="2", name="caneta", price=1.0, item_type=ItemTypeEnum.TOY, admin_permission=False),
-            Item(item_id="3", name="livro", price=50.0, item_type=ItemTypeEnum.GAMES, admin_permission=True),
+            Item(item_id="93bc17de-276d-49f9-bc8c-2f6385d0d811", name="maça", price=2.5, item_type=ItemTypeEnum.FOOD, admin_permission=False),
+            Item(item_id="aa31eb8e-67a0-4107-b286-9a008c2f1fbb", name="caneta", price=1.0, item_type=ItemTypeEnum.TOY, admin_permission=False),
+            Item(item_id="e5c6e8f4-63be-4a27-a006-2c9748b991a0", name="livro", price=50.0, item_type=ItemTypeEnum.GAMES, admin_permission=True),
         ]
         
         # Inicializa o usuário do DevBank exigido pelo Playground
