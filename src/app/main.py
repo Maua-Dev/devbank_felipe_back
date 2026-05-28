@@ -13,8 +13,7 @@ from .entities.item import Item
 app = FastAPI()
 
 # Objeto que faz a ponte para os Itens e Usuário (DevBank)
-repo = Environments.get_item_repo()
-
+repo = Environments.get_item_repo()()
 # ==========================================================
 # ROTAS DO DEVBANK
 # ==========================================================
