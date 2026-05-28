@@ -10,11 +10,11 @@ class ItemRepositoryMock(IItemRepository):
     user: User
 
     def __init__(self):
-        # IDs exatos exigidos pelos testes automatizados do template
+        # IDs e Nomes exatos exigidos pelos testes automatizados do template
         self.items = [
-            Item(item_id="b11af449-22c7-43db-b0e4-dbfbbe7fdbd7", name="maça", price=2.5, item_type=ItemTypeEnum.FOOD, admin_permission=False),
+            Item(item_id="b11af449-22c7-43db-b0e4-dbfbbe7fdbd7", name="Barbie", price=2.5, item_type=ItemTypeEnum.TOY, admin_permission=False),
             Item(item_id="b21af449-22c7-43db-b0e4-dbfbbe7fdbd7", name="caneta", price=1.0, item_type=ItemTypeEnum.TOY, admin_permission=False),
-            Item(item_id="b41af449-22c7-43db-b0e4-dbfbbe7fdbd7", name="livro", price=50.0, item_type=ItemTypeEnum.GAMES, admin_permission=True),
+            Item(item_id="b41af449-22c7-43db-b0e4-dbfbbe7fdbd7", name="Super Mario Bros", price=50.0, item_type=ItemTypeEnum.GAMES, admin_permission=True),
         ]
         
         # Inicializa o usuário do DevBank
