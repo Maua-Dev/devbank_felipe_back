@@ -1,84 +1,77 @@
-from typing import Optional, List
-
-from ..enums.item_type_enum import ItemTypeEnum
-from ..entities.item import Item
+from typing import List, Optional, Any
+from src.app.entities.item import Item
+from src.app.enums.item_type_enum import ItemTypeEnum
+from src.app.entities.user import User
+from src.app.errors.entity_errors import EntityValidationError
 from .item_repository_interface import IItemRepository
-
-
-# aqui vemos que a interface está sendo implementada na declaração da classe.
-# isso significa que todos os métodos abstratos presentes na interface devem ser implementados
 
 class ItemRepositoryMock(IItemRepository):
     items: List[Item]
-    
+    user: User
+
     def __init__(self):
         self.items = [
-            Item(
-                item_id="b11af449-22c7-43db-b0e4-dbfbbe7fdbd7", 
-                name="Barbie", 
-                price=48.90, 
-                item_type=ItemTypeEnum.TOY, 
-                admin_permission=False
-            ),
-            Item(
-                item_id="b21af449-22c7-43db-b0e4-dbfbbe7fdbd7", 
-                name="Hamburguer", 
-                price=38.00, 
-                item_type=ItemTypeEnum.FOOD, 
-                admin_permission=False
-            ),
-            Item(
-                item_id="b31af449-22c7-43db-b0e4-dbfbbe7fdbd7", 
-                name="T-shirt", 
-                price=22.95, 
-                item_type=ItemTypeEnum.CLOTHES, 
-                admin_permission=False
-            ),
-            Item(
-                item_id="b41af449-22c7-43db-b0e4-dbfbbe7fdbd7", 
-                name="Super Mario Bros", 
-                price=55.00, 
-                item_type=ItemTypeEnum.GAMES, 
-                admin_permission=True
-            )
+            Item(item_id="1", name="maça", price=2.5, item_type=ItemTypeEnum.FOOD, admin_permission=False),
+            Item(item_id="2", name="caneta", price=1.0, item_type=ItemTypeEnum.TOY, admin_permission=False),
+            Item(item_id="3", name="livro", price=50.0, item_type=ItemTypeEnum.GAMES, admin_permission=True),
         ]
         
+        # Inicializa o usuário do DevBank exigido pelo Playground
+        self.user = User(
+            name="Vitor Soller",
+            agency="0000",
+            account="00000-0",
+            current_balance=1000.0
+        )
+
+    def get_user(self) -> User:
+        """Retorna o estado atualizado do usuario."""
+        return self.user
+
+    def deposit(self, amount: float) -> User:
+        """Soma o valor recebido ao saldo atual."""
+        if amount <= 0:
+            raise EntityValidationError("O valor do deposito deve ser maior que zero")
+        self.user.current_balance += amount
+        return self.user
+
+    def withdraw(self, amount: float) -> User:
+        """Subtrai o valor do saldo se houver fundos suficientes."""
+        if amount <= 0:
+            raise EntityValidationError("O valor do saque deve ser maior que zero")
+        if amount > self.user.current_balance:
+            raise EntityValidationError("Saldo insuficiente para realizar o saque")
+        self.user.current_balance -= amount
+        return self.user
+
     def get_all_items(self) -> List[Item]:
         return self.items
-    
+
     def get_item(self, item_id: str) -> Optional[Item]:
         for item in self.items:
-            
             if item.item_id == item_id:
                 return item
-            
         return None
-    
+
     def create_item(self, item: Item) -> Item:
-        
         self.items.append(item)
-        
         return item
-    
-    def delete_item(self, item_id: str) -> Item:
-        for item in self.items:
+
+    def delete_item(self, item_id: str) -> Optional[Item]:
+        for index, item in enumerate(self.items):
             if item.item_id == item_id:
-                self.items.remove(item)
-                return item
+                return self.items.pop(index)
         return None
-        
-        
+
     def update_item(
         self, 
-        item_id:str, 
-        name:str=None, 
-        price:float=None, 
-        item_type:ItemTypeEnum=None, 
-        admin_permission:bool=None
+        item_id: str, 
+        name: Optional[str] = None, 
+        price: Optional[float] = None, 
+        item_type: Optional[Any] = None, 
+        admin_permission: Optional[bool] = None
     ) -> Optional[Item]:
-        
         for item in self.items:
-            
             if item.item_id == item_id:
                 if name is not None:
                     item.name = name
@@ -89,6 +82,4 @@ class ItemRepositoryMock(IItemRepository):
                 if admin_permission is not None:
                     item.admin_permission = admin_permission
                 return item
-            
         return None
-    
