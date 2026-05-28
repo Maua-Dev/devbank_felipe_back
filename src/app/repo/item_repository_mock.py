@@ -10,14 +10,14 @@ class ItemRepositoryMock(IItemRepository):
     user: User
 
     def __init__(self):
-        # IDs atualizados para formato UUID válido exigido pela entidade Item da Mauá
+        # IDs exatos exigidos pelos testes automatizados do template
         self.items = [
-            Item(item_id="93bc17de-276d-49f9-bc8c-2f6385d0d811", name="maça", price=2.5, item_type=ItemTypeEnum.FOOD, admin_permission=False),
-            Item(item_id="aa31eb8e-67a0-4107-b286-9a008c2f1fbb", name="caneta", price=1.0, item_type=ItemTypeEnum.TOY, admin_permission=False),
-            Item(item_id="e5c6e8f4-63be-4a27-a006-2c9748b991a0", name="livro", price=50.0, item_type=ItemTypeEnum.GAMES, admin_permission=True),
+            Item(item_id="b11af449-22c7-43db-b0e4-dbfbbe7fdbd7", name="maça", price=2.5, item_type=ItemTypeEnum.FOOD, admin_permission=False),
+            Item(item_id="b21af449-22c7-43db-b0e4-dbfbbe7fdbd7", name="caneta", price=1.0, item_type=ItemTypeEnum.TOY, admin_permission=False),
+            Item(item_id="b41af449-22c7-43db-b0e4-dbfbbe7fdbd7", name="livro", price=50.0, item_type=ItemTypeEnum.GAMES, admin_permission=True),
         ]
         
-        # Inicializa o usuário do DevBank exigido pelo Playground
+        # Inicializa o usuário do DevBank
         self.user = User(
             name="Vitor Soller",
             agency="0000",
@@ -26,18 +26,15 @@ class ItemRepositoryMock(IItemRepository):
         )
 
     def get_user(self) -> User:
-        """Retorna o estado atualizado do usuario."""
         return self.user
 
     def deposit(self, amount: float) -> User:
-        """Soma o valor recebido ao saldo atual."""
         if amount <= 0:
             raise EntityValidationError("O valor do deposito deve ser maior que zero")
         self.user.current_balance += amount
         return self.user
 
     def withdraw(self, amount: float) -> User:
-        """Subtrai o valor do saldo se houver fundos suficientes."""
         if amount <= 0:
             raise EntityValidationError("O valor do saque deve ser maior que zero")
         if amount > self.user.current_balance:
