@@ -1,9 +1,7 @@
-
 from enum import Enum
 import os
 
 from .errors.environment_errors import EnvironmentNotFound
-
 from .repo.item_repository_interface import IItemRepository
 
 
@@ -32,13 +30,16 @@ class Environments:
         if "STAGE" not in os.environ or os.environ["STAGE"] == STAGE.DOTENV.value:
             self._configure_local()
 
-        self.stage = STAGE[os.environ.get("STAGE")]
+        # CORREÇÃO 1: Garante que o valor buscado seja uma string válida para não quebrar o Enum
+        stage_value = os.environ.get("STAGE") or STAGE.TEST.value
+        self.stage = STAGE[stage_value]
 
     @staticmethod
     def get_item_repo() -> IItemRepository:
         if Environments.get_envs().stage == STAGE.TEST:
             from .repo.item_repository_mock import ItemRepositoryMock
-            return ItemRepositoryMock
+            # CORREÇÃO 2: Adicionado os parênteses () para retornar o repositório instanciado
+            return ItemRepositoryMock()
         # use "elif" conditional to add other stages
         else:
             raise EnvironmentNotFound("STAGE")
@@ -56,4 +57,4 @@ class Environments:
         return envs
 
     def __repr__(self):
-        return self.__dict__
+        return str(self.__dict__)
