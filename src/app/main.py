@@ -3,6 +3,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import ValidationError
 from mangum import Mangum
+from typing import Any
 
 from .environments import Environments
 from .errors.entity_errors import ParamNotValidated, EntityValidationError
@@ -11,22 +12,18 @@ from .entities.item import Item
 
 app = FastAPI()
 
-# Este objeto agora faz a ponte tanto para os Itens quanto para o Usuário (DevBank)
+# Objeto que faz a ponte para os Itens e Usuário (DevBank)
 repo = Environments.get_item_repo()()
 
 # ==========================================================
-# ROTAS DO DEVBANK (BACKEND SOLO FELIPE)
+# ROTAS DO DEVBANK
 # ==========================================================
 
 @app.get("/")
 def get_user_data():
-    """
-    Rota raiz exigida pela Dev Maua para trazer as informacoes 
-    iniciais do usuario do DevBank integrado com o Playground.
-    """
+    """Rota raiz que traz as informações do usuário para o Playground."""
     try:
         user = repo.get_user()
-        # Como a nossa entidade User herda de BaseModel, usamos o to_dict ou o dump se estruturado
         if hasattr(user, 'to_dict'):
             return user.to_dict()
         return user.model_dump()
@@ -36,9 +33,7 @@ def get_user_data():
 
 @app.post("/deposit")
 def deposit(request: dict):
-    """
-    Rota de Deposito: Recebe {"amount": valor} e soma ao saldo.
-    """
+    """Rota de Depósito: Recebe {"amount": valor}."""
     amount = request.get("amount")
     if amount is None:
         raise HTTPException(status_code=400, detail="O parametro amount eh obrigatorio")
@@ -56,9 +51,7 @@ def deposit(request: dict):
 
 @app.post("/withdraw")
 def withdraw(request: dict):
-    """
-    Rota de Saque: Recebe {"amount": valor} e subtrai do saldo.
-    """
+    """Rota de Saque: Recebe {"amount": valor}."""
     amount = request.get("amount")
     if amount is None:
         raise HTTPException(status_code=400, detail="O parametro amount eh obrigatorio")
@@ -74,7 +67,7 @@ def withdraw(request: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 # ==========================================================
-# ROTAS PADRÃO DO TEMPLATE (MANTIDAS INTACTAS)
+# ROTAS PADRÃO DO TEMPLATE
 # ==========================================================
 
 @app.get("/items/get_all_items")
@@ -91,10 +84,8 @@ def get_item(item_id: str):
         raise HTTPException(status_code=400, detail=validation_item_id[1])
     
     item = repo.get_item(item_id)
-    
     if item is None:
         raise HTTPException(status_code=404, detail="Item Not found")
-    
     return {
         "item_id": item_id,
         "item": item.to_dict()    
@@ -103,7 +94,6 @@ def get_item(item_id: str):
 @app.post("/items/create_item", status_code=201)
 def create_item(request: dict):
     item_id = request.get("item_id")
-    
     validation_item_id = Item.validate_item_id(item_id=item_id)
     if not validation_item_id[0]:
         raise HTTPException(status_code=400, detail=validation_item_id[1])
@@ -144,18 +134,15 @@ def create_item(request: dict):
 @app.delete("/items/delete_item")
 def delete_item(request: dict):
     item_id = request.get("item_id")
-    
     validation_item_id = Item.validate_item_id(item_id=item_id)
     if not validation_item_id[0]:
         raise HTTPException(status_code=400, detail=validation_item_id[1])
     
     item = repo.get_item(item_id)
-    
     if item is None:
         raise HTTPException(status_code=404, detail="Item Not found")
 
     item_deleted = repo.delete_item(item_id)
-    
     return {
         "item_id": item_id,
         "item": item_deleted.to_dict()    
@@ -164,13 +151,11 @@ def delete_item(request: dict):
 @app.put("/items/update_item")
 def update_item(request: dict):
     item_id = request.get("item_id")
-    
     validation_item_id = Item.validate_item_id(item_id=item_id)
     if not validation_item_id[0]:
         raise HTTPException(status_code=400, detail=validation_item_id[1])
     
     item = repo.get_item(item_id)
-    
     if item is None:
         raise HTTPException(status_code=404, detail="Item Not found")
 
@@ -189,7 +174,6 @@ def update_item(request: dict):
         item_type = None
         
     item_updated = repo.update_item(item_id, name, price, item_type, admin_permission)
-    
     return {
         "item_id": item_id,
         "item": item_updated.to_dict()    
