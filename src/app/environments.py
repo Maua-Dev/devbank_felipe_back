@@ -36,11 +36,10 @@ class Environments:
 
     @staticmethod
     def get_item_repo() -> IItemRepository:
-        if Environments.get_envs().stage == STAGE.TEST:
+        # Adicionamos o STAGE.DEV e PROD para a AWS não quebrar!
+        if Environments.get_envs().stage in [STAGE.TEST, STAGE.DEV, STAGE.PROD]:
             from .repo.item_repository_mock import ItemRepositoryMock
-            # CORREÇÃO 2: Adicionado os parênteses () para retornar o repositório instanciado
             return ItemRepositoryMock()
-        # use "elif" conditional to add other stages
         else:
             raise EnvironmentNotFound("STAGE")
         
